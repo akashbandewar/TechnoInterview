@@ -21,6 +21,12 @@ import com.akash.app.dao.User;
 import com.akash.app.dao.Userdto;
 import com.akash.app.service.MyService;
 
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 @Controller
 public class MyController {
 	
@@ -39,12 +45,49 @@ public class MyController {
 	}
 	
 	// GET USER ROLE
-		String getAuthority() {
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			String role = authentication.getAuthorities().toString();
-			return role.substring(1,role.length() - 1);
-			//return role.slice(0,-2);
+	String getAuthority() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String role = authentication.getAuthorities().toString();
+		return role.substring(1,role.length() - 1);
+		//return role.slice(0,-2);
+	}
+	
+	//Compress image while adding
+	public static byte[] compressBytes(byte[] data) {
+		Deflater deflater = new Deflater();
+		deflater.setInput(data);
+		deflater.finish();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+		byte[] buffer = new byte[1024];
+		while (!deflater.finished()) {
+			int count = deflater.deflate(buffer);
+			outputStream.write(buffer, 0, count);
 		}
+		try {
+			outputStream.close();
+		} catch (IOException e) {
+		}
+		System.out.println("Compressed Image Byte Size - " + outputStream.toByteArray().length);
+		return outputStream.toByteArray();
+	}
+	
+	//Decompress Image while retrieving
+	public static byte[] decompressBytes(byte[] data) {
+		Inflater inflater = new Inflater();
+		inflater.setInput(data);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+		byte[] buffer = new byte[1024];
+		try {
+			while (!inflater.finished()) {
+				int count = inflater.inflate(buffer);
+				outputStream.write(buffer, 0, count);
+			}
+			outputStream.close();
+		} catch (IOException ioe) {
+		} catch (DataFormatException e) {
+		}
+		return outputStream.toByteArray();
+	}	
 	
 	//HOMEPAGE
 	@RequestMapping("/")
