@@ -117,6 +117,7 @@ public class MyController {
 		System.out.println(user);
 		boolean check = myService.UserExist(user.getEmail());
 		if(check) {
+			user.setProfileImage(compressBytes(user.getProfileImage()));
 			myService.registerUser(user);
 			return "homepage";
 		}
@@ -129,6 +130,8 @@ public class MyController {
 	@RequestMapping("/profile")
 	public String profile(ModelMap map) {
 		User user = myService.myProfile(getCurrentUser());
+		byte[] actualImage = decompressBytes(user.getProfileImage());
+		user.setProfileImage(actualImage);
 		map.put("user",user);
 		return "profile";
 	}
