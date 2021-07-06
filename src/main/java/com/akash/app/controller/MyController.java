@@ -1,12 +1,14 @@
 package com.akash.app.controller;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +19,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.akash.app.dao.MyUserDetails;
+import com.akash.app.dao.SecureToken;
 import com.akash.app.dao.User;
 import com.akash.app.dao.Userdto;
+import com.akash.app.repo.MyRepository;
+import com.akash.app.repo.TokenRepository;
 import com.akash.app.service.MyService;
+import com.akash.app.service.SecureTokenService;
 
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -36,6 +42,15 @@ public class MyController {
 	
 	@Autowired
 	MyService myService; 
+	
+    @Autowired
+    private SecureTokenService secureTokenService;
+    
+    @Autowired
+    TokenRepository tokenRepository;
+    
+    @Autowired
+    MyRepository myRepository;
 	
 	// GET CURRENT USER
 	String getCurrentUser() {
@@ -113,8 +128,12 @@ public class MyController {
 	
 	//REGISTER POST METHOD
 	@RequestMapping(value = "/registerPost", method = RequestMethod.POST)
-	public String registerUser(User user) throws Exception{
+	public String registerUser(User user, final BindingResult bindingResult,ModelMap modelMap) throws Exception{
 		System.out.println(user);
+		if(bindingResult.hasErrors()){
+			modelMap.addAttribute("user", user);
+			return "register";
+		}
 		boolean check = myService.UserExist(user.getEmail());
 		if(check) {
 			user.setProfileImage(compressBytes(user.getProfileImage()));
@@ -124,6 +143,19 @@ public class MyController {
 		else {
 			throw new Exception("USER ALREADY EXIST");
 		}
+	}
+	
+	@RequestMapping(value = "/verifyUser",method = RequestMethod.GET)
+	public String verifyUser(@RequestParam String token,ModelMap map) throws Exception{
+		SecureToken secureToken = secureTokenService.findByToken(token);
+		if(Objects.isNull(secureToken)) {
+			throw new Exception("Invalid or expired token");
+		}
+		User user = secureToken.getUser();	
+		user.setAccountVerified(true);
+		myRepository.save(user);
+		secureTokenService.removeToken(secureToken);
+		return "login";
 	}
 	
 	//MY PROFILE

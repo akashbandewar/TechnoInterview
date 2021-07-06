@@ -29,6 +29,8 @@ public class MyUserDetailsService implements UserDetailsService{
 //		Optional<Userdto> opt = Optional.of(temp);
 		
 		user.orElseThrow(() -> new UsernameNotFoundException(email + " not found"));
+//		User userObject = user.get();
+//		boolean enabled = !userObject.isAccountVerified();
 //		Optional<Userdto> userdto = new Userdto(user,role.get());
  
 		return user.map(MyUserDetails::new).get();

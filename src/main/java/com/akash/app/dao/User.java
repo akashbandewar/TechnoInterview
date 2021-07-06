@@ -1,6 +1,7 @@
 package com.akash.app.dao;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -11,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -34,8 +36,13 @@ public class User {
 	@Column(name="user_password")
 	private String userPassword;
 	
+	private boolean accountVerified = false;
+	
 	@Column(name = "profileImage", length = 1000)
 	private byte[] profileImage;
+	
+	@OneToMany(mappedBy = "user")
+    private Set<SecureToken> tokens;
 	
 	@ManyToOne()
     @JoinColumn(name = "role_id", referencedColumnName = "role_id")
@@ -43,7 +50,6 @@ public class User {
 	
 	public User() {
 	}
-	
 
 	public User(String name, String email, String mobile, String userPassword, byte[] profileImage, Role role) {
 		super();
@@ -55,6 +61,14 @@ public class User {
 		this.role = role;
 	}
 
+	public boolean isAccountVerified() {
+		return accountVerified;
+	}
+	
+	public void setAccountVerified(boolean accountVerified) {
+		this.accountVerified = accountVerified;
+	}
+	
 	public Role getRole() {
 		return role;
 	}

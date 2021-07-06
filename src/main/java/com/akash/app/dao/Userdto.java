@@ -12,8 +12,6 @@ public class Userdto {
 	private String email;
 	
 	private String mobile;
-	
-	
 
 	public Userdto() {
 	}

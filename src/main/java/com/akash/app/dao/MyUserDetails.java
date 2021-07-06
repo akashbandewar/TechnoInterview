@@ -25,7 +25,7 @@ public class MyUserDetails implements UserDetails {
 	public MyUserDetails(User user) {
 		this.userName = user.getEmail();
 		this.password = user.getUserPassword();
-		this.active = true;
+		this.active = user.isAccountVerified();
 		this.authorities = Arrays.stream(user.getRole().getRole().split(","))
 		.map(SimpleGrantedAuthority::new)
 		.collect(Collectors.toList());
@@ -63,13 +63,13 @@ public class MyUserDetails implements UserDetails {
 	@Override
 	public boolean isCredentialsNonExpired() {
 		// TODO Auto-generated method stub
-		return true;
+		return true;  	
 	}
 
 	@Override
 	public boolean isEnabled() {
 		// TODO Auto-generated method stub
-		return true;
+		return active;
 	}
 
 }
